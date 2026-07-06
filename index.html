@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mask Vids — video mixer by mask</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="stage canvas-bg" id="stage">
+    <canvas id="output"></canvas>
+    <div class="hover-play-btn" id="hover-play-btn" aria-hidden="true">
+      <svg id="hover-play-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+        <polygon points="6,4 20,12 6,20"/>
+      </svg>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </main>
+
+  <aside class="sidebar">
+    <div class="sidebar-scroll menu-scroll">
+      <div class="sidebar-header">
+        Mask Vids
+        <span class="version">v1.0</span>
+      </div>
+
+      <p class="hint">Shape decides where each video shows, not exact color: one shape color reveals Video A (empty background reveals B), or use two shape colors to map each one to a different video.</p>
+
+      <section class="section">
+        <div class="section-label">Mask (SVG only)</div>
+        <div class="dropzone" id="dz-mask" data-kind="mask">
+          <div class="dz-body">
+            <span class="dz-placeholder">Drop an SVG mask here</span>
+            <img class="dz-preview" id="preview-mask" hidden>
+          </div>
+        </div>
+        <input type="file" id="file-mask" accept="image/svg+xml,.svg" hidden>
+
+        <div class="section-label preset-label">Presets</div>
+        <div class="preset-row">
+          <button class="preset-thumb" data-preset-name="preset-01-logo.svg" title="Logo shape">
+            <svg viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1920 1080H0V540H792V810H1128V540H1920V1080Z" fill="black"/>
+              <rect x="792.161" y="270" width="335.679" height="270" fill="black"/>
+            </svg>
+          </button>
+          <button class="preset-thumb" data-preset-name="preset-02-shapes.svg" title="Shapes + background">
+            <svg viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#clip0_1420_408)">
+                <rect y="360" width="640" height="360" fill="black"/>
+                <rect x="640" y="720" width="640" height="360" fill="black"/>
+                <rect x="640" width="640" height="360" fill="black"/>
+                <rect x="1280" y="360" width="640" height="360" fill="black"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_1420_408"><rect width="1920" height="1080" fill="white"/></clipPath>
+              </defs>
+            </svg>
+          </button>
+          <button class="preset-thumb" data-preset-name="preset-03-checker-bw.svg" title="Two-color checker">
+            <svg viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#clip0_1420_413)">
+                <rect y="180" width="320" height="180" fill="black"/>
+                <rect x="320" y="360" width="320" height="180" fill="black"/>
+                <rect x="320" width="320" height="180" fill="black"/>
+                <rect x="640" y="180" width="320" height="180" fill="black"/>
+                <rect x="1280" y="180" width="320" height="180" fill="black"/>
+                <rect x="960" y="720" width="320" height="180" fill="black"/>
+                <rect x="1280" y="900" width="320" height="180" fill="black"/>
+                <rect x="1280" y="540" width="320" height="180" fill="black"/>
+                <rect x="320" y="720" width="320" height="180" fill="black"/>
+                <rect x="640" y="900" width="320" height="180" fill="black"/>
+                <rect y="900" width="320" height="180" fill="black"/>
+                <rect x="640" y="540" width="320" height="180" fill="black"/>
+                <rect y="540" width="320" height="180" fill="black"/>
+                <rect x="960" y="360" width="320" height="180" fill="black"/>
+                <rect x="1600" y="360" width="320" height="180" fill="black"/>
+                <rect x="960" width="320" height="180" fill="black"/>
+                <rect x="1600" width="320" height="180" fill="black"/>
+                <rect x="1600" y="720" width="320" height="180" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1920 180)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1600 360)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1600 0)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1280 180)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 640 180)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 960 720)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 640 900)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 640 540)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1600 720)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1280 900)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1920 900)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1280 540)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1920 540)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 960 360)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 320 360)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 960 0)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 320 0)" fill="white"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 320 720)" fill="white"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_1420_413"><rect width="1920" height="1080" fill="white"/></clipPath>
+              </defs>
+            </svg>
+          </button>
+          <button class="preset-thumb" data-preset-name="preset-04-checker-mono.svg" title="Single-color checker">
+            <svg viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#clip0_1422_498)">
+                <rect y="180" width="320" height="180" fill="black"/>
+                <rect x="320" y="360" width="320" height="180" fill="black"/>
+                <rect x="320" width="320" height="180" fill="black"/>
+                <rect x="640" y="180" width="320" height="180" fill="black"/>
+                <rect x="1280" y="180" width="320" height="180" fill="black"/>
+                <rect x="960" y="720" width="320" height="180" fill="black"/>
+                <rect x="1280" y="900" width="320" height="180" fill="black"/>
+                <rect x="1280" y="540" width="320" height="180" fill="black"/>
+                <rect x="320" y="720" width="320" height="180" fill="black"/>
+                <rect x="640" y="900" width="320" height="180" fill="black"/>
+                <rect y="900" width="320" height="180" fill="black"/>
+                <rect x="640" y="540" width="320" height="180" fill="black"/>
+                <rect y="540" width="320" height="180" fill="black"/>
+                <rect x="960" y="360" width="320" height="180" fill="black"/>
+                <rect x="1600" y="360" width="320" height="180" fill="black"/>
+                <rect x="960" width="320" height="180" fill="black"/>
+                <rect x="1600" width="320" height="180" fill="black"/>
+                <rect x="1600" y="720" width="320" height="180" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1920 180)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1600 360)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1600 0)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1280 180)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 640 180)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 960 720)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 640 900)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 640 540)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1600 720)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1280 900)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1920 900)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1280 540)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 1920 540)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 960 360)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 320 360)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 960 0)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 320 0)" fill="black"/>
+                <rect width="320" height="180" transform="matrix(-1 0 0 1 320 720)" fill="black"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_1422_498"><rect width="1920" height="1080" fill="white"/></clipPath>
+              </defs>
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-label">Video A <span class="tag tag-a">A</span></div>
+        <div class="dropzone" id="dz-a" data-kind="videoA">
+          <div class="dz-body">
+            <span class="dz-placeholder">Drop a video or image A here</span>
+            <video class="dz-preview" id="preview-a" muted playsinline hidden></video>
+            <img class="dz-preview" id="preview-a-img" hidden>
+          </div>
+        </div>
+        <input type="file" id="file-a" accept="video/*,image/*" hidden>
+      </section>
+
+      <section class="section">
+        <div class="section-label">Video B <span class="tag tag-b">B</span></div>
+        <div class="dropzone" id="dz-b" data-kind="videoB">
+          <div class="dz-body">
+            <span class="dz-placeholder">Drop a video or image B here</span>
+            <video class="dz-preview" id="preview-b" muted playsinline hidden></video>
+            <img class="dz-preview" id="preview-b-img" hidden>
+          </div>
+        </div>
+        <input type="file" id="file-b" accept="video/*,image/*" hidden>
+      </section>
+
+      <section class="section">
+        <div class="section-label">Aspect ratio</div>
+        <div class="segmented" id="aspect-ratio-group">
+          <button type="button" class="segment active" data-aspect="auto">Auto</button>
+          <button type="button" class="segment" data-aspect="1:1">1:1</button>
+          <button type="button" class="segment" data-aspect="16:9">16:9</button>
+          <button type="button" class="segment" data-aspect="9:16">9:16</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="toggle-row">
+          <span>Invert</span>
+          <button role="switch" aria-checked="false" class="toggle-switch" id="invert-toggle">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+        <div class="toggle-row">
+          <span>Time displacement</span>
+          <button role="switch" aria-checked="false" class="toggle-switch" id="time-displacement-toggle">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+        <div class="slider-row" id="time-groups-row" hidden>
+          <span>Time groups</span>
+          <input type="range" id="time-groups-slider" min="2" max="8" step="1" value="6">
+          <span class="slider-value" id="time-groups-value">6</span>
+        </div>
+      </section>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="footer-buttons">
+        <button class="btn-menu" id="btn-playpause" disabled>Play</button>
+        <button class="btn-menu btn-icon" id="btn-download" disabled title="Download mixed output as video">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span id="btn-download-label">Download</span>
+        </button>
+      </div>
+      <p class="status" id="status">Waiting for mask + videos A and B…</p>
+    </div>
+  </aside>
+
+  <script src="app.js"></script>
+</body>
+</html>

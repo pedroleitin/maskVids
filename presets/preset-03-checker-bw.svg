@@ -1,0 +1,45 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_1420_413)">
+<rect y="180" width="320" height="180" fill="black"/>
+<rect x="320" y="360" width="320" height="180" fill="black"/>
+<rect x="320" width="320" height="180" fill="black"/>
+<rect x="640" y="180" width="320" height="180" fill="black"/>
+<rect x="1280" y="180" width="320" height="180" fill="black"/>
+<rect x="960" y="720" width="320" height="180" fill="black"/>
+<rect x="1280" y="900" width="320" height="180" fill="black"/>
+<rect x="1280" y="540" width="320" height="180" fill="black"/>
+<rect x="320" y="720" width="320" height="180" fill="black"/>
+<rect x="640" y="900" width="320" height="180" fill="black"/>
+<rect y="900" width="320" height="180" fill="black"/>
+<rect x="640" y="540" width="320" height="180" fill="black"/>
+<rect y="540" width="320" height="180" fill="black"/>
+<rect x="960" y="360" width="320" height="180" fill="black"/>
+<rect x="1600" y="360" width="320" height="180" fill="black"/>
+<rect x="960" width="320" height="180" fill="black"/>
+<rect x="1600" width="320" height="180" fill="black"/>
+<rect x="1600" y="720" width="320" height="180" fill="black"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 1920 180)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 1600 360)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 1600 0)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 1280 180)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 640 180)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 960 720)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 640 900)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 640 540)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 1600 720)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 1280 900)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 1920 900)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 1280 540)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 1920 540)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 960 360)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 320 360)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 960 0)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 320 0)" fill="white"/>
+<rect width="320" height="180" transform="matrix(-1 0 0 1 320 720)" fill="white"/>
+</g>
+<defs>
+<clipPath id="clip0_1420_413">
+<rect width="1920" height="1080" fill="white"/>
+</clipPath>
+</defs>
+</svg>
