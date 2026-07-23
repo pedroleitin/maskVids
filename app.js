@@ -757,6 +757,30 @@
     }, { once: true });
   }
 
+  // coverUv() in the shader crops using ONE aspect ratio per side (aspect.a/
+  // aspect.b), applied uniformly to every slot texture of that side — there's
+  // no per-slot aspect uniform. So if images 1..N-1 have a different native
+  // aspect ratio than image 0 (the one aspect.a/aspect.b gets set from),
+  // they'd be cropped with the wrong window and appear shifted inside their
+  // tile. Fixed by pre-cropping every image to image 0's aspect ratio here,
+  // via canvas 2D, before upload — every slot texture then truly has the
+  // aspect the shader assumes, regardless of the source images' own sizes.
+  function cropToAspect(img, targetAspect) {
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    const imgAspect = iw / ih;
+    let sx, sy, sw, sh;
+    if (imgAspect > targetAspect) {
+      sh = ih; sw = ih * targetAspect; sx = (iw - sw) / 2; sy = 0;
+    } else {
+      sw = iw; sh = iw / targetAspect; sx = 0; sy = (ih - sh) / 2;
+    }
+    const c = document.createElement('canvas');
+    c.width = Math.round(sw);
+    c.height = Math.round(sh);
+    c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+    return c;
+  }
+
   // One or more dropped images fill the same time-group slot textures used
   // by video time displacement — image 0 goes in slot 0 (the plain/no-effect
   // path, same as a single static image always did), images 1..N-1 go in the
@@ -775,12 +799,15 @@
       img.onerror = reject;
       img.src = url;
     }))).then((images) => {
+      const refAspect = images[0].naturalWidth / images[0].naturalHeight;
       // Wrap-fill every slot (not just the loaded ones) by cycling through
       // the images, so a group index assigned on the OTHER side (see the
       // comment in updateIslandTexture) never lands on an empty texture.
       for (let i = 0; i < N_SLOTS; i++) {
+        const source = images[i % images.length];
+        const cropped = i === 0 ? source : cropToAspect(source, refAspect);
         gl.bindTexture(gl.TEXTURE_2D, slotTex[i]);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[i % images.length]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cropped);
       }
       urls.slice(1).forEach(URL.revokeObjectURL);
 
