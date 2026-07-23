@@ -93,6 +93,12 @@
   const timeGroupsRow = document.getElementById('time-groups-row');
   const timeGroupsSlider = document.getElementById('time-groups-slider');
   const timeGroupsValue = document.getElementById('time-groups-value');
+  const panAmountRow = document.getElementById('pan-amount-row');
+  const panAmountSlider = document.getElementById('pan-amount-slider');
+  const panAmountValue = document.getElementById('pan-amount-value');
+  panAmountSlider.addEventListener('input', () => {
+    panAmountValue.textContent = panAmountSlider.value + '%';
+  });
 
   timeGroupsSlider.max = String(N_SLOTS);
   if (Number(timeGroupsSlider.value) > N_SLOTS) timeGroupsSlider.value = String(N_SLOTS);
@@ -164,6 +170,7 @@
       uniform float uCanvasAspect;
       uniform bool uPanA;
       uniform bool uPanB;
+      uniform float uPanAmount;
 
       vec2 coverUv(vec2 uv, float texAspect, float canvasAspect) {
         vec2 scale = texAspect > canvasAspect
@@ -174,15 +181,19 @@
 
       // For a side with a single static image (nothing to switch between),
       // "displacement" instead pans/zooms the sample window per group, like a
-      // displacement map — same image, different crop per island. Zooming in
-      // first (0.6) leaves enough margin that the pan offset (±0.175) never
-      // reaches outside the original crop.
+      // displacement map — same image, different crop per island. uPanAmount
+      // (0..1, "Displacement" slider) scales both the zoom-in and the pan
+      // offset together, at a fixed ratio (0.875) that keeps the offset
+      // within the zoomed-in margin at every amount, so it never reaches
+      // outside the original crop.
       vec2 panUv(vec2 uv, int group) {
         float g = float(group) + 1.0;
         float ox = fract(sin(g * 12.9898) * 43758.5453) - 0.5;
         float oy = fract(sin(g * 78.233) * 43758.5453) - 0.5;
-        vec2 zoomed = (uv - 0.5) * 0.6 + 0.5;
-        return zoomed + vec2(ox, oy) * 0.35;
+        float zoom = mix(1.0, 0.6, uPanAmount);
+        float panRange = mix(0.0, 0.35, uPanAmount);
+        vec2 zoomed = (uv - 0.5) * zoom + 0.5;
+        return zoomed + vec2(ox, oy) * panRange;
       }
 
       vec3 pickA(int group, vec2 uv) {
@@ -268,6 +279,7 @@
   const uCanvasAspect = gl.getUniformLocation(program, 'uCanvasAspect');
   const uPanA = gl.getUniformLocation(program, 'uPanA');
   const uPanB = gl.getUniformLocation(program, 'uPanB');
+  const uPanAmount = gl.getUniformLocation(program, 'uPanAmount');
   const uVideoASlots = [];
   const uVideoBSlots = [];
   for (let i = 0; i < N_SLOTS; i++) {
@@ -572,6 +584,7 @@
   const timeDisplacementToggle = wireToggle('time-displacement-toggle', (checked) => {
     timeDisplacementEnabled = checked;
     timeGroupsRow.hidden = !checked;
+    panAmountRow.hidden = !checked;
     if (checked) {
       updateIslandTexture();
       refreshClonesForCurrentMask();
@@ -626,6 +639,7 @@
     // multiple images keeps the existing per-tile distinct-image behavior.
     gl.uniform1i(uPanA, timeDisplacementEnabled && aIsImage && aImageCount <= 1 ? 1 : 0);
     gl.uniform1i(uPanB, timeDisplacementEnabled && bIsImage && bImageCount <= 1 ? 1 : 0);
+    gl.uniform1f(uPanAmount, Number(panAmountSlider.value) / 100);
     gl.uniform1i(uMaskLoaded, state.mask ? 1 : 0);
     gl.uniform1f(uFallbackForeground, state.videoA ? 1 : (state.videoB ? 0 : 1));
     gl.uniform1f(uAspectA, aspect.a);
