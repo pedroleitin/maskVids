@@ -162,12 +162,27 @@
       uniform float uAspectB;
       uniform float uAspectMask;
       uniform float uCanvasAspect;
+      uniform bool uPanA;
+      uniform bool uPanB;
 
       vec2 coverUv(vec2 uv, float texAspect, float canvasAspect) {
         vec2 scale = texAspect > canvasAspect
           ? vec2(canvasAspect / texAspect, 1.0)
           : vec2(1.0, texAspect / canvasAspect);
         return (uv - 0.5) * scale + 0.5;
+      }
+
+      // For a side with a single static image (nothing to switch between),
+      // "displacement" instead pans/zooms the sample window per group, like a
+      // displacement map — same image, different crop per island. Zooming in
+      // first (0.6) leaves enough margin that the pan offset (±0.175) never
+      // reaches outside the original crop.
+      vec2 panUv(vec2 uv, int group) {
+        float g = float(group) + 1.0;
+        float ox = fract(sin(g * 12.9898) * 43758.5453) - 0.5;
+        float oy = fract(sin(g * 78.233) * 43758.5453) - 0.5;
+        vec2 zoomed = (uv - 0.5) * 0.6 + 0.5;
+        return zoomed + vec2(ox, oy) * 0.35;
       }
 
       vec3 pickA(int group, vec2 uv) {
@@ -202,6 +217,9 @@
             group = int(info.r * ${groupDenom} + 0.5);
           }
         }
+
+        if (uPanA) uvA = panUv(uvA, group);
+        if (uPanB) uvB = panUv(uvB, group);
 
         vec3 colorA = pickA(group, uvA);
         vec3 colorB = pickB(group, uvB);
@@ -248,6 +266,8 @@
   const uAspectB = gl.getUniformLocation(program, 'uAspectB');
   const uAspectMask = gl.getUniformLocation(program, 'uAspectMask');
   const uCanvasAspect = gl.getUniformLocation(program, 'uCanvasAspect');
+  const uPanA = gl.getUniformLocation(program, 'uPanA');
+  const uPanB = gl.getUniformLocation(program, 'uPanB');
   const uVideoASlots = [];
   const uVideoBSlots = [];
   for (let i = 0; i < N_SLOTS; i++) {
@@ -601,6 +621,11 @@
 
     gl.uniform1i(uInvert, invertToggle.checked ? 1 : 0);
     gl.uniform1i(uTimeDisplacement, timeDisplacementEnabled ? 1 : 0);
+    // A single static image has nothing to switch between, so displacement
+    // pans/zooms within it instead (see panUv in the shader). A side with
+    // multiple images keeps the existing per-tile distinct-image behavior.
+    gl.uniform1i(uPanA, timeDisplacementEnabled && aIsImage && aImageCount <= 1 ? 1 : 0);
+    gl.uniform1i(uPanB, timeDisplacementEnabled && bIsImage && bImageCount <= 1 ? 1 : 0);
     gl.uniform1i(uMaskLoaded, state.mask ? 1 : 0);
     gl.uniform1f(uFallbackForeground, state.videoA ? 1 : (state.videoB ? 0 : 1));
     gl.uniform1f(uAspectA, aspect.a);
