@@ -223,6 +223,7 @@ html, body {
 .dropzone.filled { border-style: solid; }
 
 .dz-body {
+  position: relative;
   aspect-ratio: 16 / 9;
   display: flex;
   align-items: center;
@@ -231,6 +232,18 @@ html, body {
   border-radius: 8px;
   overflow: hidden;
   background: var(--c-btn-bg);
+}
+
+.dz-count-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--c-accent);
+  color: var(--c-accent-text);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .dz-placeholder {

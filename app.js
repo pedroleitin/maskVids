@@ -21,6 +21,10 @@
   // these track which one is currently active per side.
   let aIsImage = false;
   let bIsImage = false;
+  // How many images were dropped on an image-mode side (1 = single static
+  // image, no per-tile variety; >1 = one of these fills each time-group slot).
+  let aImageCount = 0;
+  let bImageCount = 0;
 
   function setPlaying(playing) {
     state.playing = playing;
@@ -494,10 +498,14 @@
     for (let i = 0; i < islandCount; i++) {
       (islandVideo[i] === 1 ? aIslands : bIslands).push(i);
     }
-    // A static image side has no clones (nothing to time-shift), so it must
-    // stay pinned to group 0 — that's the only slot aliased to the real texture.
-    const aGroups = timeDisplacementEnabled && !aIsImage ? assignRandomGroups(aIslands.length, n) : null;
-    const bGroups = timeDisplacementEnabled && !bIsImage ? assignRandomGroups(bIslands.length, n) : null;
+    // An island's group is written once and may end up read by EITHER side's
+    // slot array (Invert flips which side every island reads from, globally,
+    // at render time) — so it must be valid on both. Image sides handle this
+    // by wrap-filling all N_SLOTS with their images (see loadImagesFromFiles),
+    // and video sides always create clones for the same shared `n` on both
+    // sides, so any group in [0, n) is safe to assign regardless of source.
+    const aGroups = timeDisplacementEnabled ? assignRandomGroups(aIslands.length, n) : null;
+    const bGroups = timeDisplacementEnabled ? assignRandomGroups(bIslands.length, n) : null;
     const islandToGroup = new Int32Array(Math.max(1, islandCount));
     aIslands.forEach((islandIdx, k) => { islandToGroup[islandIdx] = aGroups ? aGroups[k] : 0; });
     bIslands.forEach((islandIdx, k) => { islandToGroup[islandIdx] = bGroups ? bGroups[k] : 0; });
@@ -749,53 +757,80 @@
     }, { once: true });
   }
 
-  // A dropped image is treated like a single-frame "video": no playback, no
-  // clones (nothing to time-shift), just a static texture uploaded once.
-  function loadImageFromFile(file, videoEl, imgEl, dzId, key, setIsImage) {
+  // One or more dropped images fill the same time-group slot textures used
+  // by video time displacement — image 0 goes in slot 0 (the plain/no-effect
+  // path, same as a single static image always did), images 1..N-1 go in the
+  // remaining slots instead of being populated by seeked video clones. No
+  // playback, no clones: each texture is uploaded once, here, and never again.
+  function loadImagesFromFiles(files, videoEl, imgEl, dzId, key, setIsImage, setImageCount) {
     videoEl.pause();
     videoEl.hidden = true;
     videoEl.removeAttribute('src');
-    const tex = key === 'videoA' ? texA : texB;
-    const url = URL.createObjectURL(file);
-    imgEl.onload = () => {
+    const slotTex = key === 'videoA' ? slotTexA : slotTexB;
+    const count = Math.min(files.length, N_SLOTS);
+    const urls = files.slice(0, count).map(f => URL.createObjectURL(f));
+    Promise.all(urls.map(url => new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = url;
+    }))).then((images) => {
+      // Wrap-fill every slot (not just the loaded ones) by cycling through
+      // the images, so a group index assigned on the OTHER side (see the
+      // comment in updateIslandTexture) never lands on an empty texture.
+      for (let i = 0; i < N_SLOTS; i++) {
+        gl.bindTexture(gl.TEXTURE_2D, slotTex[i]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[i % images.length]);
+      }
+      urls.slice(1).forEach(URL.revokeObjectURL);
+
       setIsImage(true);
+      setImageCount(count);
+      imgEl.src = urls[0];
       imgEl.hidden = false;
       document.querySelector(`#${dzId} .dz-placeholder`).hidden = true;
       document.getElementById(dzId).classList.add('filled');
+      const badge = document.getElementById(`${dzId}-badge`);
+      if (badge) {
+        badge.hidden = count <= 1;
+        badge.textContent = '+' + count;
+      }
 
-      gl.bindTexture(gl.TEXTURE_2D, tex);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, imgEl);
-
-      if (key === 'videoA') aspect.a = imgEl.naturalWidth / imgEl.naturalHeight;
-      else aspect.b = imgEl.naturalWidth / imgEl.naturalHeight;
+      if (key === 'videoA') aspect.a = images[0].naturalWidth / images[0].naturalHeight;
+      else aspect.b = images[0].naturalWidth / images[0].naturalHeight;
       updateOutputResolution();
 
       state[key] = true;
       setStatus();
+      updateIslandTexture();
       refreshClonesForCurrentMask();
-    };
-    imgEl.onerror = () => {
-      statusEl.textContent = 'Could not load that image.';
-    };
-    imgEl.src = url;
+    }).catch(() => {
+      statusEl.textContent = 'Could not load one of the images.';
+    });
   }
 
-  function loadMediaFromFile(file, videoEl, imgEl, dzId, key, setIsImage) {
-    if (isImageFile(file)) {
-      loadImageFromFile(file, videoEl, imgEl, dzId, key, setIsImage);
+  function loadMediaFromFile(files, videoEl, imgEl, dzId, key, setIsImage, setImageCount) {
+    if (files.length > 1 && files.every(isImageFile)) {
+      loadImagesFromFiles(files, videoEl, imgEl, dzId, key, setIsImage, setImageCount);
+    } else if (isImageFile(files[0])) {
+      loadImagesFromFiles([files[0]], videoEl, imgEl, dzId, key, setIsImage, setImageCount);
     } else {
-      loadVideoFromFile(file, videoEl, imgEl, dzId, key, setIsImage);
+      setIsImage(false);
+      setImageCount(0);
+      const badge = document.getElementById(`${dzId}-badge`);
+      if (badge) badge.hidden = true;
+      loadVideoFromFile(files[0], videoEl, imgEl, dzId, key, setIsImage);
     }
   }
 
-  function handleDrop(kind, file) {
-    if (!file) return;
+  function handleDrop(kind, files) {
+    if (!files || files.length === 0) return;
     if (kind === 'mask') {
-      loadMaskFromFile(file);
+      loadMaskFromFile(files[0]);
     } else if (kind === 'videoA') {
-      loadMediaFromFile(file, videoA, imageA, 'dz-a', 'videoA', (v) => { aIsImage = v; });
+      loadMediaFromFile(files, videoA, imageA, 'dz-a', 'videoA', (v) => { aIsImage = v; }, (n) => { aImageCount = n; });
     } else if (kind === 'videoB') {
-      loadMediaFromFile(file, videoB, imageB, 'dz-b', 'videoB', (v) => { bIsImage = v; });
+      loadMediaFromFile(files, videoB, imageB, 'dz-b', 'videoB', (v) => { bIsImage = v; }, (n) => { bImageCount = n; });
     }
   }
 
@@ -804,7 +839,7 @@
     const input = document.getElementById(fileInputId);
 
     dz.addEventListener('click', () => input.click());
-    input.addEventListener('change', () => handleDrop(kind, input.files[0]));
+    input.addEventListener('change', () => handleDrop(kind, Array.from(input.files)));
 
     ['dragenter', 'dragover'].forEach(evt =>
       dz.addEventListener(evt, e => {
@@ -819,8 +854,7 @@
       })
     );
     dz.addEventListener('drop', e => {
-      const file = e.dataTransfer.files[0];
-      handleDrop(kind, file);
+      handleDrop(kind, Array.from(e.dataTransfer.files));
     });
   }
 
@@ -853,7 +887,7 @@
     const blob = new Blob([svgText], { type: 'image/svg+xml' });
     const filename = btn.dataset.presetName || 'preset.svg';
     const file = new File([blob], filename, { type: 'image/svg+xml' });
-    handleDrop('mask', file);
+    handleDrop('mask', [file]);
   }
 
   document.querySelectorAll('.preset-thumb').forEach(btn => {

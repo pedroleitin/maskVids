@@ -4,6 +4,22 @@ History of implemented features, most recent first. The project has no git
 history yet, so dates below are approximate (per work session), not release
 tags.
 
+## 2026-07-14
+
+- **Multi-image time displacement**: dropping more than one image on Video A
+  or Video B now enables per-tile image variety — each mask island shows a
+  different one of the dropped images (via the same "Time displacement"
+  toggle used for video), instead of every island showing the same static
+  image. A count badge (`+N`) appears on the dropzone when more than one
+  image is loaded. Reuses the existing slot-texture/group-index pipeline
+  built for video time displacement; images are uploaded once (no per-frame
+  cost, no video clones).
+- **Fix**: an island's time-group index can end up read by either side after
+  Invert, so per-side image sets now wrap-fill *all* texture slots (cycling
+  through the dropped images) instead of only as many slots as images —
+  otherwise a group index "borrowed" from the other side's larger set could
+  land on an empty texture and render black.
+
 ## 2026-07-06 (2)
 
 - **Fix**: time-displacement clone count now follows the "Time groups" slider

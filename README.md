@@ -32,8 +32,11 @@ shapes-on-background mask, and two checkerboard variants).
 
 ## Features
 
-- **Video or image in either slot.** Video A/B dropzones accept video files or
-  static images; a static image behaves like a single, non-playing frame.
+- **Video or image(s) in either slot.** Video A/B dropzones accept a video
+  file, one image, or multiple images at once. A single image behaves like a
+  single, non-playing frame. Multiple images pair with Time displacement
+  (below) so each mask island shows a different image instead of a different
+  point in time.
 - **Fill/cover cropping.** Mismatched aspect ratios between mask, Video A, and
   Video B never stretch — each is cropped independently to fill its frame
   (like CSS `object-fit: cover`).

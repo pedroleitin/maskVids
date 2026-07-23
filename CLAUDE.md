@@ -65,6 +65,15 @@ with a double-click.
   flags). An image is uploaded to its texture once on load, never re-uploaded
   per frame, contributes no duration to recording auto-stop, and is skipped by
   `setPlaying()`/clone creation.
+- **Multiple images = per-tile variety instead of video clones.** Dropping
+  more than one image on a side (`loadImagesFromFiles`) wrap-fills *all*
+  `N_SLOTS` texture slots by cycling through the dropped images (not just as
+  many slots as images) — this is required, not cosmetic: an island's group
+  index is written once and can be read by *either* side's slot array after
+  Invert (see the comment in `updateIslandTexture`), so every slot must hold
+  valid content regardless of how many images that particular side has.
+  `aImageCount`/`bImageCount` exist only for the dropzone's `+N` badge, not
+  for gating group assignment.
 
 ## Known browser gotchas already worked around here
 
