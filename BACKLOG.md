@@ -37,3 +37,14 @@ discussed/planned. Implemented items get removed from here and get an entry in
   to: revoke active `ObjectURL`s, destroy time-displacement clones, empty
   `dz-a`/`dz-b`/`dz-mask` back to their placeholder state, and reset
   `state`/`aIsImage`/`bIsImage`/`islandLabelCache`.
+
+- [ ] **Try a WebGL2 branch (target: 2026-07-23).**
+  Not a performance play (the real bottleneck was Safari's concurrent video
+  decode, unrelated to the graphics API) — purely a code-cleanliness spike.
+  GLSL ES 3.00 supports dynamic `sampler2D[]` indexing, which would let
+  `pickA`/`pickB` do a plain `texture(uVideoA[group], uv)` instead of the
+  generated `unrolledPick` if/else chain in `buildFragmentSrc()`
+  ([app.js:128](app.js)). Needs `getContext('webgl2')` and a shader rewrite
+  (`attribute`/`varying` → `in`/`out`, `texture2D` → `texture`, add
+  `#version 300 es`). Do this on a branch, not main — verify it doesn't
+  regress WebGL1-only environments before merging.
